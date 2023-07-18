@@ -41,7 +41,7 @@ def driver_chrome_incognito():
 def sign_up_create_links(driver, user_name, e_mail, passwd):
     num = 0
     driver.get("https://bitly.com/a/sign_up")
-    time.sleep(1)
+    time.sleep(2)
     username = driver.find_element(by=By.NAME, value="username")
     ActionChains(driver=driver).move_to_element(username).click().perform()
     username.send_keys(user_name)
@@ -82,18 +82,22 @@ def sign_up_create_links(driver, user_name, e_mail, passwd):
                             try:
                                 links.send_keys(Keys.ENTER)
                                 time.sleep(1)
-                                print("---------------")
-                                print("success!")
-                                print("---------------")
                                 num += 1
+                                try:
+                                   WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, "bitlink--MAIN")))
+                                except:
+                                    links.send_keys(Keys.CONTROL + "a")
+                                    time.sleep(1)
+                                    links.send_keys(Keys.BACKSPACE)
+                                    time.sleep(3)
                             except:
-                                print("--------------")
-                                print("failed!")
+                                pass
                         except:
                             pass
             except:
                 pass
         except:
+            print("-------There is account with this email already!!!------ ")
             # update_file("./assets/gmails.txt", )
             pass
     except:
@@ -110,8 +114,8 @@ def save_to_file(driver):
             for link in bitly_links:
                 shortend_url = link.get_attribute("title")
                 with open("./assets/created_links.txt", "a", encoding="utf-8") as created_links:
-                    created_links.write(shortend_url + "\n")
-                print(shortend_url)
+                    created_links.write("https://" + shortend_url + "\n")
+                # print(shortend_url)
         except:
             pass
     except:
@@ -123,9 +127,10 @@ def main():
     for gmail in gmails:
         expressvpn.connect()
         ip = get("https://api.ipify.org").content.decode("utf-8")
-        print(ip)
+        print("--------------------------------------------------------------")
+        print("----------My public IP address is " + ip + "------------------")
         num_remain_links = len(read_file_line_by_line("./assets/links.txt"))
-        print(num_remain_links)
+        print(format(num_remain_links) + " links remained.")
         if num_remain_links == 0:
             break
         else:
@@ -135,10 +140,10 @@ def main():
             driver = driver_chrome_incognito()
             try:
                 sign_up_create_links_driver = sign_up_create_links(driver=driver, user_name=username, e_mail=email, passwd=password)
-                time.sleep(1)
+                time.sleep(2)
                 try:
                     save_to_file(driver=sign_up_create_links_driver)
-                    time.sleep(1)
+                    time.sleep(2)
                     try:
                         update_file("./assets/gmails.txt", 1)
                     except ValueError:
