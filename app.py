@@ -94,18 +94,17 @@ def sign_up_create_links(driver, user_name, e_mail, passwd):
             except:
                 pass
         except:
-            driver.close()
+            # update_file("./assets/gmails.txt", )
+            pass
     except:
         pass
     return driver
 
 def save_to_file(driver):   
     try:
-        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@aria-label='Links Icon']")))
         generated_links_button = driver.find_element(by=By.XPATH, value="//div[@aria-label='Links Icon']")
         generated_links_button.click()
         try:
-            WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CLASS_NAME, "bitlink--MAIN")))
             bitly_links = driver.find_elements(by=By.CLASS_NAME, value="bitlink--MAIN")
             num_bitly_links = len(bitly_links)
             for link in bitly_links:
@@ -113,9 +112,9 @@ def save_to_file(driver):
                 with open("./assets/created_links.txt", "a", encoding="utf-8") as created_links:
                     created_links.write(shortend_url + "\n")
                 print(shortend_url)
-        except ValueError:
+        except:
             pass
-    except ValueError:
+    except:
         pass
     driver.close()
 
