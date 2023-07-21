@@ -56,49 +56,59 @@ def sign_up_create_links(driver, user_name, e_mail, passwd):
     try:
         submit.submit()
         try:
-            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.NAME, "link-button")))
-            pyautogui.press("f5")
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "link-button")))
+            time.sleep(1)
             try:
-                WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//button[@class='orb-button create-btn']")))
-                while num < 10:
-                    remaining_links = read_file_line_by_line("./assets/links.txt")
-                    if len(remaining_links) == 0:
-                        print("Generated for all links!")
-                        return driver
-                    else:
-                        create_new = driver.find_element(by=By.XPATH, value="//button[@class='orb-button create-btn']")
-                        ActionChains(driver=driver).move_to_element(create_new).click().perform()
-                        time.sleep(1)
-                        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='create-link']")))
-                        create_link = driver.find_element(by=By.XPATH, value="//div[@class='create-link']")
-                        create_link.click()
-                        time.sleep(1)
-                        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//input[@placeholder='https://example.com/my-long-url']")))
-                        links = driver.find_element(by=By.XPATH, value="//input[@placeholder='https://example.com/my-long-url']")
-                        try:
-                            links.send_keys(read_file_line_by_line('./assets/links.txt')[0].strip())
-                            update_file("./assets/links.txt", 1)
+                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//button[@aria-label='Close']")))
+                time.sleep(1)
+                close_button = driver.find_element(by=By.XPATH, value="//button[@aria-label='Close']")
+                time.sleep(1)
+                close_button.click()
+                time.sleep(1)
+                try:
+                    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//button[@class='orb-button create-btn']")))
+                    while num < 10:
+                        remaining_links = read_file_line_by_line("./assets/links.txt")
+                        if len(remaining_links) == 0:
+                            print("Generated for all links!")
+                            return driver
+                        else:
+                            create_new = driver.find_element(by=By.XPATH, value="//button[@class='orb-button create-btn']")
+                            ActionChains(driver=driver).move_to_element(create_new).click().perform()
                             time.sleep(1)
+                            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@class='create-link']")))
+                            create_link = driver.find_element(by=By.XPATH, value="//div[@class='create-link']")
+                            create_link.click()
+                            time.sleep(1)
+                            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//input[@placeholder='https://example.com/my-long-url']")))
+                            links = driver.find_element(by=By.XPATH, value="//input[@placeholder='https://example.com/my-long-url']")
                             try:
-                                links.send_keys(Keys.ENTER)
+                                links.send_keys(read_file_line_by_line('./assets/links.txt')[0].strip())
+                                update_file("./assets/links.txt", 1)
                                 time.sleep(1)
-                                num += 1
                                 try:
-                                   WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, "bitlink--MAIN")))
-                                except:
-                                    links.send_keys(Keys.CONTROL + "a")
+                                    links.send_keys(Keys.ENTER)
                                     time.sleep(1)
-                                    links.send_keys(Keys.BACKSPACE)
-                                    time.sleep(3)
+                                    num += 1
+                                    try:
+                                        WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, "bitlink--MAIN")))
+                                    except:
+                                        links.send_keys(Keys.CONTROL + "a")
+                                        time.sleep(1)
+                                        links.send_keys(Keys.BACKSPACE)
+                                        time.sleep(3)
+                                except:
+                                    pass
                             except:
                                 pass
-                        except:
-                            pass
+                except:
+                    pass
             except:
+                print("!!!!!!!!!!")
                 pass
         except:
             print("-------There is account with this email already!!!------ ")
-            # update_file("./assets/gmails.txt", )
+            update_file("./assets/gmails.txt", 1)
             pass
     except:
         pass
@@ -125,7 +135,6 @@ def save_to_file(driver):
 def main():
     gmails = read_file_line_by_line("./assets/gmails.txt")
     for gmail in gmails:
-        expressvpn.connect()
         ip = get("https://api.ipify.org").content.decode("utf-8")
         print("--------------------------------------------------------------")
         print("----------My public IP address is " + ip + "------------------")
@@ -150,13 +159,10 @@ def main():
                         print(ValueError)
                         pass
                 except ValueError:
-                    print(ValueError)
+                    driver.close()
                     pass
-            except ValueError:
-                update_file("./assets/gmails.txt", 1)
-                driver.close()
-                print(ValueError)
-            expressvpn.disconnect()
+            except:
+                pass
     print("I am happy, bot role ended")
 
 if __name__ == '__main__':
