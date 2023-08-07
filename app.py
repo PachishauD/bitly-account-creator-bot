@@ -24,7 +24,7 @@ location_index = 0
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 mainpath = "./assets/links"
-url_gmails = "./assets/gmail.txt"
+url_gmails = "./assets/gmails.txt"
 
 def set_clipboard(text):
     pyperclip.copy(text)
@@ -71,34 +71,39 @@ def sign_up_create_links(driver, user_name, e_mail, passwd, url_link):
                 try:
                     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//button[@class='orb-button create-btn']")))
                     while num < 10:
-                        create_new = driver.find_element(by=By.XPATH, value="//button[@class='orb-button create-btn']")
-                        ActionChains(driver=driver).move_to_element(create_new).click().perform()
-                        time.sleep(1)
-                        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@class='create-link']")))
-                        create_link = driver.find_element(by=By.XPATH, value="//div[@class='create-link']")
-                        create_link.click()
-                        time.sleep(1)
-                        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//input[@placeholder='https://example.com/my-long-url']")))
-                        links = driver.find_element(by=By.XPATH, value="//input[@placeholder='https://example.com/my-long-url']")
-                        try:
-                            links.send_keys(read_file_line_by_line(url_link)[0].strip())
-                            update_file(url_link, 1)
+                        remaining_links = read_file_line_by_line(url_link)
+                        if len(remaining_links) == 0:
+                            print("Generated for all links!")
+                            return driver
+                        else:
+                            create_new = driver.find_element(by=By.XPATH, value="//button[@class='orb-button create-btn']")
+                            ActionChains(driver=driver).move_to_element(create_new).click().perform()
                             time.sleep(1)
+                            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@class='create-link']")))
+                            create_link = driver.find_element(by=By.XPATH, value="//div[@class='create-link']")
+                            create_link.click()
+                            time.sleep(1)
+                            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//input[@placeholder='https://example.com/my-long-url']")))
+                            links = driver.find_element(by=By.XPATH, value="//input[@placeholder='https://example.com/my-long-url']")
                             try:
-                                links.send_keys(Keys.ENTER)
+                                links.send_keys(read_file_line_by_line(url_link)[0].strip())
+                                update_file(url_link, 1)
                                 time.sleep(1)
-                                num += 1
                                 try:
-                                    WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, "bitlink--MAIN")))
-                                except:
-                                    links.send_keys(Keys.CONTROL + "a")
+                                    links.send_keys(Keys.ENTER)
                                     time.sleep(1)
-                                    links.send_keys(Keys.BACKSPACE)
-                                    time.sleep(3)
+                                    num += 1
+                                    try:
+                                        WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, "bitlink--MAIN")))
+                                    except:
+                                        links.send_keys(Keys.CONTROL + "a")
+                                        time.sleep(1)
+                                        links.send_keys(Keys.BACKSPACE)
+                                        time.sleep(3)
+                                except:
+                                    pass
                             except:
                                 pass
-                        except:
-                            pass
                 except:
                     pass
             except:
@@ -106,7 +111,7 @@ def sign_up_create_links(driver, user_name, e_mail, passwd, url_link):
                 pass
         except:
             print("-------There is account with this email already!!!------ ")
-            update_file("./assets/gmails.txt", 1)
+            update_file(url_gmails, 1)
             pass
     except:
         pass
@@ -133,37 +138,45 @@ def save_to_file(driver, url_created_link):
 def main():
     gmails = read_file_line_by_line(url_gmails)
     links_names = os.listdir(path=mainpath)
+    bitly_links_folder = mainpath + "/bitly_links"
+    # os.makedirs(bitly_links_folder)
     for links_name in links_names:
+        gmails = read_file_line_by_line(url_gmails)
         url_links = mainpath + "/" + links_name
-        links = read_file_line_by_line(url_links)
-        os.makedirs(mainpath + "/" + links_name.split(".")[0])
-        url_created_links = mainpath + "/" +links_name.split(".")[0] + "/" + links_name
-        for link in links:
+        print(url_links)
+        url_created_links = bitly_links_folder + "/" + links_name
+        print(url_created_links)
+        for gmail in gmails:
+            print(gmail)
             ip = get("https://api.ipify.org").content.decode("utf-8")
             print("--------------------------------------------------------------")
             print("----------My public IP address is " + ip + "------------------")
             num_remain_links = len(read_file_line_by_line(url_links))
             print(format(num_remain_links) + " links remained.")
-            username = random_string()
-            email = gmails[0].strip()
-            password = random_string()
-            driver = driver_chrome_incognito()
-            try:
-                sign_up_create_links_driver = sign_up_create_links(driver=driver, user_name=username, e_mail=email, passwd=password, url_link=url_links)
-                time.sleep(2)
+            if num_remain_links == 0:
+                break
+            else:
+                username = random_string()
+                email = gmail.strip()
+                password = random_string()
+                driver = driver_chrome_incognito()
+                print("k")
                 try:
-                    save_to_file(driver=sign_up_create_links_driver, url_created_link=url_created_links)
+                    sign_up_create_links_driver = sign_up_create_links(driver=driver, user_name=username, e_mail=email, passwd=password, url_link=url_links)
                     time.sleep(2)
                     try:
-                        update_file(url_gmails, 1)
+                        save_to_file(driver=sign_up_create_links_driver, url_created_link=url_created_links)
+                        time.sleep(2)
+                        try:
+                            update_file(url_gmails, 1)
+                        except ValueError:
+                            print(ValueError)
+                            pass
                     except ValueError:
-                        print(ValueError)
+                        driver.close()
                         pass
-                except ValueError:
-                    driver.close()
+                except:
                     pass
-            except:
-                pass
         print("Created bitly links for all of " + links_name + "!")
     print("Created all links")
 
